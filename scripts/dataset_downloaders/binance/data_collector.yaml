@@ -1,0 +1,20 @@
+markets: ["BTCUSDT"]
+
+# make use_timestamps: False when using Formatted dates
+use_timestamps: False
+
+## using timestamps
+#from_list: [1659847203.726936]
+#to_list: [1659850806.744574]
+
+# from datetime values
+from_list: ["2024-06-01T00:00:00.0+00:00", "2024-06-15T00:00:00.0+00:00"]
+to_list:   ["2024-06-02T00:00:00.0+00:00", "2024-07-15T00:00:00.0+00:00"]
+
+candle_length_secs: 1
+
+# thread_pool_size: 30 gave best results on a 4 core (8 threads) processor
+# thread_pool_size: 10 gave errors due to hitting the rate limit of the Binance API. 6 is a safe number (same speed)
+thread_pool_size: 6
+
+save_dir: "../datasets/"

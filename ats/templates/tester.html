@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block css %}
+    <link href="{{ url_for('static', filename='css/list.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <br/>
+    <h3>List of Tests</h3>
+    <br/>
+    <div class="row">
+    <div class="row">
+        <div class="col-12">
+            <button class="btn btn-primary float-end" data-toggle="modal" data-target="#add-job-modal" id="btn-open-create-job-modal">Add New</button>
+        </div>
+    </div>
+    <br/>
+    <br/>
+    <div class="row">
+        <div class="col-12">
+            <div id="list-wrapper"></div>
+        </div>
+        <p id="no-trading-jobs-msg">No trading jobs found ...</p>
+    </div>
+
+    <div class="modal fade" id="add-job-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="config-modal-title" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="config-modal-title">Add Config</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+                <label for="modal-config-name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="modal-config-name">
+            </div>
+            <div class="row">
+                <div class="col-6" style="height:80vh">
+                  <label for="job-config" class="form-label">Job</label>
+                  <div id="json-editor-job-config" style="height:80vh"></div>
+                </div>
+                <div class="col-6">
+                  <label for="plot-config" class="form-label">Plots</label>
+                  <div id="json-editor-plot-config" style="height:80vh"></div>
+                </div>
+            </div>
+            <!-- <div class="mb-3">
+                <label for="job-config" class="form-label">Job</label>
+                <div id="json-editor-job-config"></div>
+            </div>
+            <div class="mb-3">
+              <label for="plot-config" class="form-label">Plot</label>
+              <div id="json-editor-plot-config"></div>
+            </div> -->
+          </div>
+          <div class="modal-footer">
+            <button id="btn-save-job" type="button" class="btn btn-primary">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/storage.js') }}" ></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/tester.js') }}" ></script>
+{% endblock %}

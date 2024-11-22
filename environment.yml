@@ -1,0 +1,64 @@
+name: ats
+channels:
+  - defaults
+dependencies:
+  # - _libgcc_mutex=0.1
+  # - _openmp_mutex=5.1
+  - bzip2=1.0.8
+  - ca-certificates=2024.3.11
+  - expat=2.6.2
+  # - ld_impl_linux-64=2.38
+  - libffi=3.4.4
+  # - libgcc-ng=11.2.0
+  # - libgomp=11.2.0
+  # - libstdcxx-ng=11.2.0
+  # - libuuid=1.41.5
+  # - ncurses=6.4
+  - openssl=3.0.13
+  - pip=24.0
+  - python=3.12.3
+  # - readline=8.2
+  - setuptools=69.5.1
+  - sqlite=3.45.3
+  - tk=8.6.14
+  - wheel=0.43.0
+  - xz=5.4.6
+  - zlib=1.2.13
+  - pip:
+      - annotated-types==0.6.0
+      - binance-connector==3.5.1
+      - blinker==1.7.0
+      - certifi==2023.11.17
+      - charset-normalizer==3.3.2
+      - ciso8601==2.3.1
+      - click==8.1.7
+      - deepdiff==6.7.1
+      - dnspython==2.6.1
+      - flask==3.0.0
+      - idna==3.6
+      - itsdangerous==2.1.2
+      - jinja2==3.1.2
+      - markupsafe==2.1.3
+      - numpy==1.26.2
+      - ordered-set==4.1.0
+      - packaging==23.2
+      - pandas==2.1.4
+      - plotly==5.18.0
+      - pycryptodome==3.19.1
+      - pydantic==2.5.2
+      - pydantic-core==2.14.5
+      - pymongo==4.10.1
+      - python-dateutil==2.8.2
+      - python-dotenv==1.0.0
+      - pytz==2023.3.post1
+      - pyyaml==6.0.1
+      - requests==2.31.0
+      - six==1.16.0
+      - tenacity==8.2.3
+      - tqdm==4.67.0
+      - typing-extensions==4.8.0
+      - tzdata==2023.3
+      - urllib3==2.1.0
+      - validators==0.22.0
+      - websocket-client==1.7.0
+      - werkzeug==3.0.1

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block css %}
+    <link href="{{ url_for('static', filename='css/list.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <script type="text/javascript">
+        var job_id = '{{job_id}}';
+        var plot_id = '{{plot_id}}';
+    </script>
+{% endblock %}
+
+{% block non_content %}
+        <iframe id="plot-content" style="width:100vw; height: 100vh;" src="" frameborder="0"></iframe>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/storage.js') }}" ></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/plot.js') }}" ></script>
+{% endblock %}

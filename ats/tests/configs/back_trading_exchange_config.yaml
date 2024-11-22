@@ -1,0 +1,53 @@
+exchange:
+  namespace: 'exchanges:back_trading'
+  config:
+    symbol:
+      quote: USD
+      base: BTC
+
+    # Defines the size of the window for plot data. -1 Means there is no limit for the window (i.e. Grows with every data point)
+    plot_data_max_len: -1
+
+    extra:
+      # A file path
+      data_source: 'tests/data/BTC_USDT_very_short.csv'
+
+      # Wallet's initial configs
+      wallet:
+        assets:
+          USD: 1000000
+          BTC: 10
+          ETH: 10.1
+
+      # Exchange's allowed minimum trading size
+      min_trading_size: 0.0001
+
+      # Fee config
+      fees:
+        namespace: 'fees:generic' # Class name must be canonical
+        config: # Fee config is unique to each exchange. Therefore, there is no restriction for parameters here. It can even be empty
+          limit: # Limit order fees
+            buy:
+              quote: 0
+              base: 0.001
+            sell:
+              quote: 0.001
+              base: 0
+          market: # Market order fees
+            buy:
+              quote: 0
+              base: 0.001
+            sell:
+              quote: 0.001
+              base: 0
+
+strategy:
+  namespace: 'strategies:simple_strategy'
+  config:
+    log_trade_activity: true,
+    base_symbol: 'BTC'
+    quote_symbol: 'USD'
+    random_number_limit: 1000
+    trade_rate_control: 100
+    order_size: 0.001
+    price_step: 10

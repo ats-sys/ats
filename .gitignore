@@ -1,0 +1,9 @@
+.env
+data
+logs
+!tests/data
+*/__pycache__/
+.pyc
+*.pickle
+*.pyc
+.idea/

@@ -1,0 +1,27 @@
+exchange:
+  namespace: 'exchanges:binance_spot'
+  config:
+    symbol:
+      quote: 'USDT'
+      base: 'BTC'
+
+    # Defines the size of the window for plot data. -1 Means there is no limit for the window (i.e. Grows with every data point)
+    plot_data_max_len: -1
+
+    extra:
+      api_key: BDdkIJAU9FPrbWwmsBev3KtgPLEbuV7Uhah9J8kPDQewCFIe8bj1mURUMShagWEZ
+      api_secret: c21v4r1X04ba0DwD9d5atveaCh279TNCwJ4ZgsbucDZ7RH94KJ81LL2kVfFm3mI2
+      trading_mode: TEST  # TEST or LIVE
+      candle_time: 1s  # Refer binance doc to see supported time intervals
+      force_close_time: 360000 # When the order's age is more than the defined amount in sec, order is closed by looking at the candle values
+
+strategy:
+  namespace: 'strategies:simple_strategy'
+  config:
+    log_trade_activity: true,
+    base_symbol: 'BTC'
+    quote_symbol: 'USD'
+    random_number_limit: 1000
+    trade_rate_control: 100
+    order_size: 0.001
+    price_step: 10
