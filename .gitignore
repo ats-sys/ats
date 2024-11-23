@@ -7,3 +7,4 @@ logs
 *.pickle
 *.pyc
 .idea/
+custom_modules/
