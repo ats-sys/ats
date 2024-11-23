@@ -206,174 +206,7 @@ class AdvancedBaseStrategy(BaseStrategy):
             # Stopping the pending order manger
             self.pending_order_manager.stop()
 
-        print("==" * 50)
-        print("||" * 16, end="")
-        print(" Trade Report from Metric Evaluator ", end="")
-        print("||" * 16)
-        print("==" * 50, end="\n")
-
-        # ---------------------------------------
-        print(f"\n{BColors.BOLD}{BColors.HEADER}1) Basic Info{BColors.ENDC}\n")
-        completed_order_count = self.order_stats['buy_sell'] * 2 + self.order_stats['buy_only'] + self.order_stats[
-            'sell_only'] + self.order_stats['liq_buy'] + self.order_stats['liq_sell']
-        print(f"\t> # of open buy-sell pairs: {len(self.open_trades)}")
-        print(f"\t> # of open one-sided orders: {len(self.open_one_sided_orders)}")
-        print(f"\t> # of open liquidation orders: {len(self.liquidation_orders)}")
-        print(f"\t> # of completed orders: {completed_order_count}")
-        print(f"\t> # of rejected orders: {len(self.rejected_order_ids)}")
-
-        if completed_order_count > 0:
-            print(
-                f"\t\t> buy-sell count: {self.order_stats['buy_sell'] * 2} ({self.order_stats['buy_sell'] * 2 * 100 / completed_order_count:.4f} %)")
-            print(
-                f"\t\t> one-sided count: {self.order_stats['buy_only'] + self.order_stats['sell_only']} ({(self.order_stats['buy_only'] + self.order_stats['sell_only']) * 100 / completed_order_count:.4f} %)")
-            print(
-                f"\t\t\t> buy only count: {self.order_stats['buy_only']} ({self.order_stats['buy_only'] * 100 / completed_order_count:.4f} %)")
-            print(
-                f"\t\t\t> sell only count: {self.order_stats['sell_only']} ({self.order_stats['sell_only'] * 100 / completed_order_count:.4f} %)")
-            print(
-                f"\t\t> Liquidation order count: {self.order_stats['liq_buy'] + self.order_stats['liq_sell']} (buy: {self.order_stats['liq_buy']}, sell: {self.order_stats['liq_sell']})")
-
-            trading_time = (self.curr_time - self.start_time).total_seconds()
-            trades_per_hour = self.order_stats['buy_sell'] / (trading_time / 3600)
-
-            buy_exec_times = self.order_exec_times["BUY"]
-            sell_exec_times = self.order_exec_times["SELL"]
-            buy_sell_exec_times = self.order_exec_times["BUY_SELL"]
-
-            print(f"\t> Start time: {self.start_time}")
-            print(f"\t> End time: {self.curr_time}")
-            print(
-                f"\t> Trading time: {trading_time / 60:.2f} minutes ({trading_time / 3600:.2f} hours = {trading_time / (24 * 3600):.2f} days)")
-            print("\t> Trades (Buy-Sell Pair) Execution Times:")
-            print(
-                f"\t\t> Trading rate: {trades_per_hour: .1f} trades per hour = {int(trades_per_hour * 24)} trades per day")
-            if buy_sell_exec_times:
-                print(
-                    f"\t\t> Longest trade time: {np.max(buy_sell_exec_times) / 60: .2f} minutes = {np.max(buy_sell_exec_times) / 3600: .2f} hours")
-                print(f"\t\t> Shortest trade time: {np.min(buy_sell_exec_times) / 60: .2f} minutes")
-                print(f"\t\t> Average trade time: {np.mean(buy_sell_exec_times) / 60: .2f} minutes")
-                print(f"\t\t> STD of trade time: {np.std(buy_sell_exec_times) / 60: .2f} minutes")
-                # print(f"\t\t> Trade time sequence: {get_order_ts(buy_sell_exec_times)}")  # Used for debugging
-                print(
-                    f"\t\t> Trade time percentiles: {find_percentiles(buy_sell_exec_times, time_list=True, time_scale_by_60=True)} minutes")
-
-            if buy_exec_times:
-                print("\t> Buy Execution Times (Limit Orders Only):")
-                print(
-                    f"\t\t> Longest buy time: {np.max(buy_exec_times) / 60: .2f} minutes = {np.max(buy_sell_exec_times) / 3600: .2f} hours")
-                print(f"\t\t> Shortest buy time: {np.min(buy_exec_times) / 60: .2f} minutes")
-                print(f"\t\t> Average buy time: {np.mean(buy_exec_times) / 60: .2f} minutes")
-                print(f"\t\t> STD of buy time: {np.std(buy_exec_times) / 60: .2f} minutes")
-                # print(f"\t\t> Buy time sequence: {get_order_ts(buy_exec_times)}")  # Used for debugging
-                print(
-                    f"\t\t> Buy time percentiles: {find_percentiles(buy_exec_times, time_list=True, time_scale_by_60=True)} minutes")
-
-            if sell_exec_times:
-                print("\t> Sell Execution Times (Limit Orders Only):")
-                print(
-                    f"\t\t> Longest sell time: {np.max(sell_exec_times) / 60: .2f} minutes = {np.max(buy_sell_exec_times) / 3600: .2f} hours")
-                print(f"\t\t> Shortest sell time: {np.min(sell_exec_times) / 60: .2f} minutes")
-                print(f"\t\t> Average sell time: {np.mean(sell_exec_times) / 60: .2f} minutes")
-                print(f"\t\t> STD of sell time: {np.std(sell_exec_times) / 60: .2f} minutes")
-                # print(f"\t\t> Sell time sequence: {get_order_ts(sell_exec_times)}")  # Used for debugging
-                print(
-                    f"\t\t> Sell time percentiles: {find_percentiles(sell_exec_times, time_list=True, time_scale_by_60=True)} minutes")
-
-            # ---------------------------------------
-            print(f"\n{BColors.BOLD}{BColors.HEADER}2) PnL stats (From Completed buy-sell trades){BColors.ENDC}\n")
-            pnl_percentiles = find_percentiles(self.pnl_list) if len(self.pnl_list) > 0 else None
-            pnl_percent_percentiles = find_percentiles(self.pnl_percent_list) if len(
-                self.pnl_percent_list) > 0 else None
-            sharp_ratio = find_sharp_ratio(self.pnl_percent_list, trading_days=trading_time / (24 * 3600))
-
-            pnl_array = np.array(self.pnl_list)
-            profitable_trades = pnl_array[pnl_array > 0]
-            losing_trades = pnl_array[pnl_array < 0]
-            neutral_trades = pnl_array[pnl_array == 0]
-
-            profitable_trade_count = len(profitable_trades)
-            losing_trade_count = len(losing_trades)
-            neutral_trade_count = len(neutral_trades)
-
-            total_profit = np.sum(profitable_trades)
-            total_loss = abs(np.sum(losing_trades))
-            net_profit = total_profit - total_loss
-            net_profit_percent = net_profit / self.equity_stats["init_quote"]
-
-            # print(f"\t> PnL sequence {self.quote_symbol}: {np.round(self.pnl_completed_trades, 2)}")
-            # print(f"\t> PnL sequence %: {self.pnl_percent_completed_trades * 100}")
-            print(f"\t> Average PnL {self.quote_symbol}: {self.quote_symbol} {np.mean(self.pnl_list):.5f}")
-            print(f"\t> Average PnL %: {np.mean(self.pnl_percent_list) * 100:.3f}")
-            print(f"\t> STD of PnL {self.quote_symbol}: {self.quote_symbol} {np.std(self.pnl_list):.5f}")
-            print(f"\t> STD of PnL %: {np.std(self.pnl_percent_list) * 100:.3f}")
-            print(f"\t> PnL percentiles {self.quote_symbol}: {pnl_percentiles}")
-            print(f"\t> PnL percentiles %: {pnl_percent_percentiles}")
-            print(f"\t> Sharpe ratio: {sharp_ratio:.5f}")
-            print(f"\t> # of profitable trades: {profitable_trade_count}")
-            print(f"\t> # of losing trades: {losing_trade_count}")
-            print(f"\t> # of neutral trades: {neutral_trade_count}")
-            print(
-                f"\t> Profitable trade %: {profitable_trade_count * 100 / self.order_stats['buy_sell'] if self.order_stats['buy_sell'] > 0 else 0:.1f}")
-            print(
-                f"\t> Losing trade %: {losing_trade_count * 100 / self.order_stats['buy_sell'] if self.order_stats['buy_sell'] > 0 else 0:.1f}")
-            print(f"\t> Total gain: {self.quote_symbol} {total_profit:.5f}")
-            print(f"\t> Total loss: {self.quote_symbol} {total_loss:.5f}")
-            print(f"\t> Net profit: {BColors.BOLD}{self.quote_symbol} {net_profit:.5f}{BColors.ENDC}")
-            print(f"\t> Net profit %: {BColors.BOLD} {net_profit_percent * 100:.5f} %{BColors.ENDC}")
-
-            print(
-                f"\n{BColors.BOLD}{BColors.HEADER}3) Symbol Gains (From all trades - Including open order quantities){BColors.ENDC}\n")
-            price_diff = self.equity_stats['last_price'] - self.equity_stats['init_price']
-            print(f"\t> Starting Price: {self.quote_symbol} {self.equity_stats['init_price']}")
-            print(f"\t> Last Price: {self.quote_symbol} {self.equity_stats['last_price']}")
-            print(
-                f"\t> Price Difference: {self.quote_symbol} {price_diff:.5f} ({price_diff * 100 / self.equity_stats['init_price']:.5f} %)")
-
-            total_init_base = self.equity_stats['init_base'] + self.equity_stats['init_holding_base']
-            total_last_base = self.equity_stats['last_base'] + self.equity_stats['last_holding_base']
-            init_base_in_quote = total_init_base * self.equity_stats['init_price']
-            last_base_in_quote = total_last_base * self.equity_stats['last_price']
-            base_gain = total_last_base - total_init_base
-            base_gain_in_quote = last_base_in_quote - init_base_in_quote  # TODO: or base_gain * self.equity_stats['last_price'] --> base_gain x last_price ?
-            print(
-                f"\t> {self.base_symbol} initial value: {total_init_base} (free: {self.equity_stats['init_base']:.5f}, holding: {self.equity_stats['init_holding_base']:.5f})")
-            print(
-                f"\t> {self.base_symbol} last value: {total_last_base} (free: {self.equity_stats['last_base']:.5f}, holding: {self.equity_stats['last_holding_base']:.5f})")
-            print(f"\t> {self.base_symbol} initial quote value: {self.quote_symbol} {init_base_in_quote:.5f}")
-            print(f"\t> {self.base_symbol} ending quote value: {self.quote_symbol} {last_base_in_quote:.5f}")
-            # if self.init_sym1_in_quote > 0:
-            print(
-                f"\t> {self.base_symbol} gain: {BColors.BOLD}{base_gain:.5f} = {self.quote_symbol} {base_gain_in_quote:.5f} ({base_gain_in_quote * 100 / (init_base_in_quote + 1e-9):.5f} %) --> Considering Price Fluctuation{BColors.ENDC}")
-            print(
-                f"\t> {self.base_symbol} gain: {BColors.BOLD}{base_gain:.5f} = {self.quote_symbol} {base_gain * self.equity_stats['last_price']:.5f} ({base_gain * self.equity_stats['last_price'] * 100 / (init_base_in_quote + 1e-9):.5f} %) --> Omitting Price Fluctuation{BColors.ENDC}\n")
-
-            total_init_quote = self.equity_stats['init_quote'] + self.equity_stats['init_holding_quote']
-            total_last_quote = self.equity_stats['last_quote'] + self.equity_stats['last_holding_quote']
-            quote_gain = total_last_quote - total_init_quote
-            print(
-                f"\t> {self.quote_symbol} initial value: {total_init_quote} (free: {self.equity_stats['init_quote']:.5f}, holding: {self.equity_stats['init_holding_quote']:.5f})")
-            print(
-                f"\t> {self.quote_symbol} last value: {total_last_quote} (free: {self.equity_stats['last_quote']:.5f}, holding: {self.equity_stats['last_holding_quote']:.5f})")
-            print(
-                f"\t> {self.quote_symbol} gain: {BColors.BOLD}{self.quote_symbol} {quote_gain:.5f} ({quote_gain * 100 / (total_init_quote + 1e-12):.5f} %){BColors.ENDC}\n")
-
-            init_equity = total_init_quote + init_base_in_quote
-            last_equity = total_last_quote + last_base_in_quote
-            equity_gain = last_equity - init_equity
-            last_equity_no_trade = total_init_quote + total_init_base * self.equity_stats['last_price']
-            equity_gain_no_trade = last_equity_no_trade - init_equity
-            trade_advantage = equity_gain - equity_gain_no_trade
-            print(f"\t> Initial equity value: {self.quote_symbol} {init_equity:.5f}")
-            print(f"\t> Ending equity value: {self.quote_symbol} {last_equity:.5f}")
-            print(f"\t> No Trade Ending equity value (expected): {self.quote_symbol} {last_equity_no_trade:.5f}")
-            # if self.init_equity > 0:
-            print(
-                f"\t> Equity gain: {BColors.BOLD}{self.quote_symbol} {equity_gain:.5f} ({equity_gain * 100 / init_equity:.5f} %) {BColors.ENDC}")
-            print(
-                f"\t> No Trade Equity gain (expected): {BColors.BOLD}{self.quote_symbol} {equity_gain_no_trade:.5f} ({equity_gain_no_trade * 100 / init_equity:.5f} %) {BColors.ENDC}")
-            print(
-                f"\t> Trading Advantage: {BColors.BOLD}{self.quote_symbol} {trade_advantage:.5f} ({trade_advantage * 100 / init_equity:.5f} %) {BColors.ENDC}")
+        self._get_metric_report()
 
     def on_new_order_callback(self, new_order, event_candle):
         # orders_n_candles.append([new_order, event_candle, self.__counter])
@@ -1061,6 +894,168 @@ class AdvancedBaseStrategy(BaseStrategy):
 
         balance = self.exchange.get_wallet_balance()
         return balance[self.base_symbol].holding, balance[self.quote_symbol].holding
+
+    def _get_metric_report(self):
+
+        # completed order count
+        completed_order_count = self.order_stats['buy_sell'] * 2 + self.order_stats['buy_only'] + self.order_stats[
+            'sell_only'] + self.order_stats['liq_buy'] + self.order_stats['liq_sell']
+
+        # trade time info
+        trading_time = (self.curr_time - self.start_time).total_seconds()
+        trades_per_hour = self.order_stats['buy_sell'] / (trading_time / 3600)
+
+        buy_exec_times = self.order_exec_times["BUY"]
+        sell_exec_times = self.order_exec_times["SELL"]
+        buy_sell_exec_times = self.order_exec_times["BUY_SELL"]
+
+        # PnL calculations
+        pnl_percentiles = find_percentiles(self.pnl_list) if len(self.pnl_list) > 0 else None
+        pnl_percent_percentiles = find_percentiles(self.pnl_percent_list) if len(
+            self.pnl_percent_list) > 0 else None
+        sharp_ratio = find_sharp_ratio(self.pnl_percent_list, trading_days=trading_time / (24 * 3600))
+
+        pnl_array = np.array(self.pnl_list)
+        profitable_trades = pnl_array[pnl_array > 0]
+        losing_trades = pnl_array[pnl_array < 0]
+        neutral_trades = pnl_array[pnl_array == 0]
+
+        profitable_trade_count = len(profitable_trades)
+        losing_trade_count = len(losing_trades)
+        neutral_trade_count = len(neutral_trades)
+
+        total_profit = np.sum(profitable_trades)
+        total_loss = abs(np.sum(losing_trades))
+        net_profit = total_profit - total_loss
+        net_profit_percent = net_profit / self.equity_stats["init_quote"]
+
+        # price change
+        price_diff = self.equity_stats['last_price'] - self.equity_stats['init_price']
+
+        # base asset gains
+        total_init_base = self.equity_stats['init_base'] + self.equity_stats['init_holding_base']
+        total_last_base = self.equity_stats['last_base'] + self.equity_stats['last_holding_base']
+        init_base_in_quote = total_init_base * self.equity_stats['init_price']
+        last_base_in_quote = total_last_base * self.equity_stats['last_price']
+        base_gain = total_last_base - total_init_base
+        base_gain_in_quote = last_base_in_quote - init_base_in_quote  # TODO: or base_gain * self.equity_stats['last_price'] --> base_gain x last_price ?
+
+        # quote asset gains
+        total_init_quote = self.equity_stats['init_quote'] + self.equity_stats['init_holding_quote']
+        total_last_quote = self.equity_stats['last_quote'] + self.equity_stats['last_holding_quote']
+        quote_gain = total_last_quote - total_init_quote
+
+        # equity gains
+        init_equity = total_init_quote + init_base_in_quote
+        last_equity = total_last_quote + last_base_in_quote
+        equity_gain = last_equity - init_equity
+        last_equity_no_trade = total_init_quote + total_init_base * self.equity_stats['last_price']
+        equity_gain_no_trade = last_equity_no_trade - init_equity
+        trade_advantage = equity_gain - equity_gain_no_trade
+
+        metric_report_str = ""
+
+        metric_report_str += "==" * 50 + "\n"
+        metric_report_str += "||" * 16 + " Trade Report from Metric Evaluator " + "||" * 16 + "\n"
+        metric_report_str += "==" * 50 + "\n"
+
+        # ---------------------------------------
+        metric_report_str += f"\n{BColors.BOLD}{BColors.HEADER}1) Basic Info{BColors.ENDC}\n" + "\n"
+
+        metric_report_str += f"\t> # of open buy-sell pairs: {len(self.open_trades)}" + "\n"
+        metric_report_str += f"\t> # of open one-sided orders: {len(self.open_one_sided_orders)}" + "\n"
+        metric_report_str += f"\t> # of open liquidation orders: {len(self.liquidation_orders)}" + "\n"
+        metric_report_str += f"\t> # of completed orders: {completed_order_count}" + "\n"
+        metric_report_str += f"\t> # of rejected orders: {len(self.rejected_order_ids)}" + "\n"
+
+        if completed_order_count > 0:
+            metric_report_str += f"\t\t> buy-sell count: {self.order_stats['buy_sell'] * 2} ({self.order_stats['buy_sell'] * 2 * 100 / completed_order_count:.4f} %)" + "\n"
+            metric_report_str += f"\t\t> one-sided count: {self.order_stats['buy_only'] + self.order_stats['sell_only']} ({(self.order_stats['buy_only'] + self.order_stats['sell_only']) * 100 / completed_order_count:.4f} %)" + "\n"
+            metric_report_str += f"\t\t\t> buy only count: {self.order_stats['buy_only']} ({self.order_stats['buy_only'] * 100 / completed_order_count:.4f} %)" + "\n"
+            metric_report_str += f"\t\t\t> sell only count: {self.order_stats['sell_only']} ({self.order_stats['sell_only'] * 100 / completed_order_count:.4f} %)" + "\n"
+            metric_report_str += f"\t\t> Liquidation order count: {self.order_stats['liq_buy'] + self.order_stats['liq_sell']} (buy: {self.order_stats['liq_buy']}, sell: {self.order_stats['liq_sell']})" + "\n"
+
+            metric_report_str += f"\t> Start time: {self.start_time}" + "\n"
+            metric_report_str += f"\t> End time: {self.curr_time}" + "\n"
+            metric_report_str += f"\t> Trading time: {trading_time / 60:.2f} minutes ({trading_time / 3600:.2f} hours = {trading_time / (24 * 3600):.2f} days)" + "\n"
+            metric_report_str += "\t> Trades (Buy-Sell Pair) Execution Times:" + "\n"
+            metric_report_str += f"\t\t> Trading rate: {trades_per_hour: .1f} trades per hour = {int(trades_per_hour * 24)} trades per day" + "\n"
+            if buy_sell_exec_times:
+                metric_report_str += f"\t\t> Longest trade time: {np.max(buy_sell_exec_times) / 60: .2f} minutes = {np.max(buy_sell_exec_times) / 3600: .2f} hours" + "\n"
+                metric_report_str += f"\t\t> Shortest trade time: {np.min(buy_sell_exec_times) / 60: .2f} minutes" + "\n"
+                metric_report_str += f"\t\t> Average trade time: {np.mean(buy_sell_exec_times) / 60: .2f} minutes" + "\n"
+                metric_report_str += f"\t\t> STD of trade time: {np.std(buy_sell_exec_times) / 60: .2f} minutes" + "\n"
+                # metric_report_str += f"\t\t> Trade time sequence: {get_order_ts(buy_sell_exec_times)}")  # Used for debugging
+                metric_report_str += f"\t\t> Trade time percentiles: {find_percentiles(buy_sell_exec_times, time_list=True, time_scale_by_60=True)} minutes" + "\n"
+
+            if buy_exec_times:
+                metric_report_str += "\t> Buy Execution Times (Limit Orders Only):" + "\n"
+                metric_report_str += f"\t\t> Longest buy time: {np.max(buy_exec_times) / 60: .2f} minutes = {np.max(buy_sell_exec_times) / 3600: .2f} hours" + "\n"
+                metric_report_str += f"\t\t> Shortest buy time: {np.min(buy_exec_times) / 60: .2f} minutes" + "\n"
+                metric_report_str += f"\t\t> Average buy time: {np.mean(buy_exec_times) / 60: .2f} minutes" + "\n"
+                metric_report_str += f"\t\t> STD of buy time: {np.std(buy_exec_times) / 60: .2f} minutes" + "\n"
+                # metric_report_str += f"\t\t> Buy time sequence: {get_order_ts(buy_exec_times)}")  # Used for debugging
+                metric_report_str += f"\t\t> Buy time percentiles: {find_percentiles(buy_exec_times, time_list=True, time_scale_by_60=True)} minutes" + "\n"
+
+            if sell_exec_times:
+                metric_report_str += "\t> Sell Execution Times (Limit Orders Only):" + "\n"
+                metric_report_str += f"\t\t> Longest sell time: {np.max(sell_exec_times) / 60: .2f} minutes = {np.max(buy_sell_exec_times) / 3600: .2f} hours" + "\n"
+                metric_report_str += f"\t\t> Shortest sell time: {np.min(sell_exec_times) / 60: .2f} minutes" + "\n"
+                metric_report_str += f"\t\t> Average sell time: {np.mean(sell_exec_times) / 60: .2f} minutes" + "\n"
+                metric_report_str += f"\t\t> STD of sell time: {np.std(sell_exec_times) / 60: .2f} minutes" + "\n"
+                # metric_report_str += f"\t\t> Sell time sequence: {get_order_ts(sell_exec_times)}")  # Used for debugging
+                metric_report_str += f"\t\t> Sell time percentiles: {find_percentiles(sell_exec_times, time_list=True, time_scale_by_60=True)} minutes" + "\n"
+
+            # ---------------------------------------
+            metric_report_str += f"\n{BColors.BOLD}{BColors.HEADER}2) PnL stats (From Completed buy-sell trades){BColors.ENDC}\n" + "\n"
+
+            # metric_report_str += f"\t> PnL sequence {self.quote_symbol}: {np.round(self.pnl_completed_trades, 2)}" + "\n"
+            # metric_report_str += f"\t> PnL sequence %: {self.pnl_percent_completed_trades * 100}" + "\n"
+            metric_report_str += f"\t> Average PnL {self.quote_symbol}: {self.quote_symbol} {np.mean(self.pnl_list):.5f}" + "\n"
+            metric_report_str += f"\t> Average PnL %: {np.mean(self.pnl_percent_list) * 100:.3f}" + "\n"
+            metric_report_str += f"\t> STD of PnL {self.quote_symbol}: {self.quote_symbol} {np.std(self.pnl_list):.5f}" + "\n"
+            metric_report_str += f"\t> STD of PnL %: {np.std(self.pnl_percent_list) * 100:.3f}" + "\n"
+            metric_report_str += f"\t> PnL percentiles {self.quote_symbol}: {pnl_percentiles}" + "\n"
+            metric_report_str += f"\t> PnL percentiles %: {pnl_percent_percentiles}" + "\n"
+            metric_report_str += f"\t> Sharpe ratio: {sharp_ratio:.5f}" + "\n"
+            metric_report_str += f"\t> # of profitable trades: {profitable_trade_count}" + "\n"
+            metric_report_str += f"\t> # of losing trades: {losing_trade_count}" + "\n"
+            metric_report_str += f"\t> # of neutral trades: {neutral_trade_count}" + "\n"
+            metric_report_str += f"\t> Profitable trade %: {profitable_trade_count * 100 / self.order_stats['buy_sell'] if self.order_stats['buy_sell'] > 0 else 0:.1f}" + "\n"
+            metric_report_str += f"\t> Losing trade %: {losing_trade_count * 100 / self.order_stats['buy_sell'] if self.order_stats['buy_sell'] > 0 else 0:.1f}" + "\n"
+            metric_report_str += f"\t> Total gain: {self.quote_symbol} {total_profit:.5f}" + "\n"
+            metric_report_str += f"\t> Total loss: {self.quote_symbol} {total_loss:.5f}" + "\n"
+            metric_report_str += f"\t> Net profit: {BColors.BOLD}{self.quote_symbol} {net_profit:.5f}{BColors.ENDC}" + "\n"
+            metric_report_str += f"\t> Net profit %: {BColors.BOLD} {net_profit_percent * 100:.5f} %{BColors.ENDC}" + "\n"
+
+            metric_report_str += f"\n{BColors.BOLD}{BColors.HEADER}3) Symbol Gains (From all trades - Including open order quantities){BColors.ENDC}\n" + "\n"
+
+            metric_report_str += f"\t> Starting Price: {self.quote_symbol} {self.equity_stats['init_price']}" + "\n"
+            metric_report_str += f"\t> Last Price: {self.quote_symbol} {self.equity_stats['last_price']}" + "\n"
+            metric_report_str += f"\t> Price Difference: {self.quote_symbol} {price_diff:.5f} ({price_diff * 100 / self.equity_stats['init_price']:.5f} %)" + "\n"
+
+            metric_report_str += f"\t> {self.base_symbol} initial value: {total_init_base} (free: {self.equity_stats['init_base']:.5f}, holding: {self.equity_stats['init_holding_base']:.5f})" + "\n"
+            metric_report_str += f"\t> {self.base_symbol} last value: {total_last_base} (free: {self.equity_stats['last_base']:.5f}, holding: {self.equity_stats['last_holding_base']:.5f})" + "\n"
+            metric_report_str += f"\t> {self.base_symbol} initial quote value: {self.quote_symbol} {init_base_in_quote:.5f}" + "\n"
+            metric_report_str += f"\t> {self.base_symbol} ending quote value: {self.quote_symbol} {last_base_in_quote:.5f}" + "\n"
+            # if self.init_sym1_in_quote > 0:
+            metric_report_str += f"\t> {self.base_symbol} gain: {BColors.BOLD}{base_gain:.5f} = {self.quote_symbol} {base_gain_in_quote:.5f} ({base_gain_in_quote * 100 / (init_base_in_quote + 1e-9):.5f} %) --> Considering Price Fluctuation{BColors.ENDC}" + "\n"
+            metric_report_str += f"\t> {self.base_symbol} gain: {BColors.BOLD}{base_gain:.5f} = {self.quote_symbol} {base_gain * self.equity_stats['last_price']:.5f} ({base_gain * self.equity_stats['last_price'] * 100 / (init_base_in_quote + 1e-9):.5f} %) --> Omitting Price Fluctuation{BColors.ENDC}\n" + "\n"
+
+
+            metric_report_str += f"\t> {self.quote_symbol} initial value: {total_init_quote} (free: {self.equity_stats['init_quote']:.5f}, holding: {self.equity_stats['init_holding_quote']:.5f})" + "\n"
+            metric_report_str += f"\t> {self.quote_symbol} last value: {total_last_quote} (free: {self.equity_stats['last_quote']:.5f}, holding: {self.equity_stats['last_holding_quote']:.5f})" + "\n"
+            metric_report_str += f"\t> {self.quote_symbol} gain: {BColors.BOLD}{self.quote_symbol} {quote_gain:.5f} ({quote_gain * 100 / (total_init_quote + 1e-12):.5f} %){BColors.ENDC}\n" + "\n"
+
+            metric_report_str += f"\t> Initial equity value: {self.quote_symbol} {init_equity:.5f}" + "\n"
+            metric_report_str += f"\t> Ending equity value: {self.quote_symbol} {last_equity:.5f}" + "\n"
+            metric_report_str += f"\t> No Trade Ending equity value (expected): {self.quote_symbol} {last_equity_no_trade:.5f}" + "\n"
+            # if self.init_equity > 0:
+            metric_report_str += f"\t> Equity gain: {BColors.BOLD}{self.quote_symbol} {equity_gain:.5f} ({equity_gain * 100 / init_equity:.5f} %) {BColors.ENDC}" + "\n"
+            metric_report_str += f"\t> No Trade Equity gain (expected): {BColors.BOLD}{self.quote_symbol} {equity_gain_no_trade:.5f} ({equity_gain_no_trade * 100 / init_equity:.5f} %) {BColors.ENDC}" + "\n"
+            metric_report_str += f"\t> Trading Advantage: {BColors.BOLD}{self.quote_symbol} {trade_advantage:.5f} ({trade_advantage * 100 / init_equity:.5f} %) {BColors.ENDC}" + "\n"
+
+        logger.info(metric_report_str)
 
     @staticmethod
     def get_order_exec_time(order: Order):
