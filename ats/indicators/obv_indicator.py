@@ -2,7 +2,7 @@ from ats.exchanges.data_classes.candle import Candle
 from ats.indicators.base_indicator import BaseIndicator
 
 
-class OBVIndicator(BaseIndicator):
+class ObvIndicator(BaseIndicator):
     def __init__(self, config: dict):
         super().__init__(config)
         self.candle_length = config.get("candle_length", 1)
