@@ -138,7 +138,9 @@ This option will be available soon :star_struck:
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-### Option 1:
+### Run the System
+
+#### Option 1:
 * If you followed setup [Option 1](#setup-option-1) or [Option 2](#setup-option-2), you may use the provided `start.sh` (for Linux) or `start.bat` (for Windows) if you followed 
 Refer our Documentation for all the information [Documentation][docs-url]
 
@@ -151,13 +153,26 @@ Refer our Documentation for all the information [Documentation][docs-url]
     .\start.bat 
   ```
 
-### Option 2:
+#### Option 2:
 * Inside the created `Python` environment, you can simply run the `main.py` file.
   ```shell
       python -m ats.main
   ```
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Add Custom Modules
+
+* The `custom_modules` directory is dedicated to user-defined customizations. 
+* It allows users to add their own exchange connectors, strategies, indicators, and fee models. 
+* These modules override the core ones in the ats folder if there is a naming conflict.
+* Custom modules should be extended from our [`BaseExchange`][base-exchange-url], [`BaseStrategy`][base-strategy-url], [`BaseIndicator`][base-indicator-url] and [`BaseFees`][base-fees-url] classes
+* Please Refer following sections of the Documentation for complete guidelines. 
+  * [Project Architecture][docs-architecture]
+  * [Add new Exchange][docs-add-new-exchange]
+  * [Add new Strategy][docs-add-new-strategy]
+  * [Add new Indicator][docs-add-new-indicator]
+  * [Add new fee structure][docs-add-new-fees]
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -208,4 +223,13 @@ Distributed under the Apache-2.0 License. See [`LICENSE`][license-url] for more 
 [docs-url]: https://ats-doc.gitbook.io/v1
 [license-url]: https://github.com/ats-sys/ats?tab=Apache-2.0-1-ov-file
 [contributors-url]: https://github.com/ats-sys/ats/graphs/contributors
+[docs-architecture]: https://ats-doc.gitbook.io/v1/basics/architecture
+[base-exchange-url]: https://github.com/ats-sys/ats/blob/main/ats/exchanges/base_exchange.py
+[base-strategy-url]: https://github.com/ats-sys/ats/blob/main/ats/strategies/base_strategy.py
+[base-indicator-url]: https://github.com/ats-sys/ats/blob/main/ats/indicators/base_indicator.py
+[base-fees-url]: https://github.com/ats-sys/ats/blob/main/ats/exchanges/base_fees.py
+[docs-add-new-exchange]: https://ats-doc.gitbook.io/v1/customizations/adding-a-new-exchange
+[docs-add-new-strategy]: https://ats-doc.gitbook.io/v1/customizations/adding-a-strategy
+[docs-add-new-indicator]: https://ats-doc.gitbook.io/v1/customizations/adding-an-indicator
+[docs-add-new-fees]: https://ats-doc.gitbook.io/v1/customizations/custom-fee-structures
 [screenshot]: images/screenshot.png
