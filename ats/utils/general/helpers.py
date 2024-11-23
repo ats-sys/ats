@@ -80,8 +80,8 @@ def get_class_from_namespace(namespace: str):
     class_name_map = {
         'strategies': 'Strategy',
         'exchanges': 'Exchange',
-        'fees': ''.join([word.capitalize() for word in module_name.split('_')]),
-        'indicators': module_name.capitalize()
+        'fees': ''.join([snake_to_camel(word) for word in module_name.split('_')]),
+        'indicators': snake_to_camel(module_name)
     }
     class_name = class_name_map[category]
 
