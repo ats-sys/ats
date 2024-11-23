@@ -1,6 +1,5 @@
 from ats.state.simple_state import SimpleState
 from ats.exchanges.data_classes.candle import Candle
-from ats.indicators.std_indicator import StdIndicator
 from ats.strategies.advanced_base_strategy import AdvancedBaseStrategy
 from ats.exceptions.general_exceptions import ConfigValidationException
 

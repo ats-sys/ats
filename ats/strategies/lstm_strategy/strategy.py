@@ -1,15 +1,12 @@
 import torch
 
 from ats.state.simple_state import SimpleState
-from ats.indicators.ai_indicator import AiIndicator
 from ats.exchanges.data_classes.candle import Candle
-from ats.indicators.std_indicator import StdIndicator
-from ats.indicators.rsi_indicator import RsiIndicator
-from ats.indicators.obv_indicator import OBVIndicator
+from ats.utils.general import helpers as general_helpers
 from ats.state.order_state_list_state import OrderStateListState
 from ats.strategies.advanced_base_strategy import AdvancedBaseStrategy
 from ats.exceptions.general_exceptions import ConfigValidationException
-from .model import ATSModel
+from ats.strategies.lstm_strategy.model import ATSModel
 
 
 class Strategy(AdvancedBaseStrategy):
@@ -66,12 +63,10 @@ class Strategy(AdvancedBaseStrategy):
         weight_path = self.config.get("ai_weight_path", "ai_model_clf.pt")
         ai_model = self.load_ai_model(ATSModel, weight_path, **ai_model_kwargs)
 
-        # self.ai_indicator = AiIndicator({'N': self.ai_window_length, 'model': ai_model})
-        self.ai_indicator = AiIndicator({'N': self.ai_window_length, 'candle_length': ai_candle_length, 'model': ai_model})
-        self.std_indicator = StdIndicator({'N': self.std_window_length})
-        self.rsi_indicator = RsiIndicator({'N': 14, "candle_length": rsi_candle_length})
-
-        self.obv_indicator = OBVIndicator({'N': None, 'candle_length': ai_candle_length})
+        self.ai_indicator = general_helpers.get_class_from_namespace("indicators:ai_indicator")({'N': self.ai_window_length, 'candle_length': ai_candle_length, 'model': ai_model})
+        self.std_indicator = general_helpers.get_class_from_namespace("indicators:std_indicator")({'N': self.std_window_length})
+        self.rsi_indicator = general_helpers.get_class_from_namespace("indicators:rsi_indicator")({'N': 14, "candle_length": rsi_candle_length})
+        self.obv_indicator = general_helpers.get_class_from_namespace("indicators:obv_indicator")({'N': None, 'candle_length': ai_candle_length})
 
         self.order_value_pct = self.config["order_value_pct"] / 100
 
