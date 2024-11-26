@@ -9,7 +9,7 @@ class ObvIndicator(BaseIndicator):
         # self._is_ready = True
         self.sub_candle_count = 0
         self.candle_vol = 0
-        self.previous_close = 0
+        self.previous_close = None
 
     def add(self, candle: Candle):
         """
@@ -25,6 +25,14 @@ class ObvIndicator(BaseIndicator):
 
         if self.candle_length == 1 or (self.sub_candle_count == self.candle_length - 1):
             close = candle.close
+
+            # Initialize previous_close if this is the first candle
+            if self.previous_close is None:
+                self.previous_close = close
+                self._is_ready = True
+                self.result = (0, 0)  # Initial OBV value and change
+                return
+
             _ = self.running_calc(None, close)
 
             self.sub_candle_count = 0
