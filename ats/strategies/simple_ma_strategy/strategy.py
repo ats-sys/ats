@@ -115,7 +115,7 @@ class Strategy(AdvancedBaseStrategy):
             self.last_dual_order_check_time = self.curr_time.timestamp()
 
             if self.use_pom:
-                self.init()
+                self.init_pom()
 
             self.init_plots()
 

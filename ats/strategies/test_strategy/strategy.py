@@ -34,7 +34,7 @@ class Strategy(AdvancedBaseStrategy):
             self.init_asset_ratio = self.base_asset_balance * candle.close / (self.quote_asset_balance + 1e-6)
 
             if self.use_pom:
-                self.init()
+                self.init_pom()
 
             self.init_plots()
 

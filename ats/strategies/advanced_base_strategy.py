@@ -144,7 +144,7 @@ class AdvancedBaseStrategy(BaseStrategy):
             self.init_asset_ratio = self.base_asset_balance * candle.close / (self.quote_asset_balance + 1e-6)
 
             if self.use_pom:
-                self.init()
+                self.init_pom()
 
             self.init_plots()
 
@@ -218,7 +218,7 @@ class AdvancedBaseStrategy(BaseStrategy):
     def on_cancel_order_callback(self, cancelled_order, event_candle):
         pass
 
-    def init(self):
+    def init_pom(self):
         self.pending_order_manager = PendingOrderManager(exchange=self.exchange,
                                                          config={
                                                              'price_gap_perc_cancel': self.price_gap_perc_cancel,
