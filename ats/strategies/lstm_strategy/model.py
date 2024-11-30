@@ -2,6 +2,7 @@ import torch
 import random
 import numpy as np
 import torch.nn as nn
+from collections import deque
 
 
 class ATSModel(nn.Module):
@@ -101,13 +102,15 @@ class AIModel(BaseAIModel):
     def __init__(self, model, lookback):
         super().__init__(model, lookback)
         self.lookback = lookback
-        self.input_buffer = []
+        # self.input_buffer = []
+        self.input_buffer = deque()
 
     def _pre_process(self, x):
         self.input_buffer.append(x)
 
         if len(self.input_buffer) > self.lookback:
-            self.input_buffer.pop(0)
+            # self.input_buffer.pop(0)
+            self.input_buffer.popleft()
 
         # if len(self.input_buffer) < self.lookback:
         #     return False

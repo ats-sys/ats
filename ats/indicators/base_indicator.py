@@ -1,10 +1,12 @@
+from collections import deque
 from abc import abstractmethod
 
 
 # TODO: Make this thread safe.
 class BaseIndicator:
     def __init__(self, config: dict):
-        self.time_series = []
+        # self.time_series = []
+        self.time_series = deque()
         self.config = config
         self.N = config['N']
         self.sums = None
@@ -24,7 +26,8 @@ class BaseIndicator:
         popped = None
         if len(self.time_series) == self.N:
             self._is_ready = True
-            popped = self.time_series.pop(0)
+            # popped = self.time_series.pop(0)
+            popped = self.time_series.popleft()
 
         calculated_data_point = self.running_calc(popped, data)
         self.time_series.append(calculated_data_point)

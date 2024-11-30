@@ -1,3 +1,5 @@
+from collections import deque
+
 import numpy as np
 from ats.indicators.base_indicator import BaseIndicator
 
@@ -6,8 +8,10 @@ class RsiIndicator(BaseIndicator):
     def __init__(self, config: dict):
         super().__init__(config)
         self.candle_length = config.get("candle_length", 1)
-        self.gains = []
-        self.losses = []
+        # self.gains = []
+        # self.losses = []
+        self.gains = deque()
+        self.losses = deque()
         self.prev_avg_gain = None
         self.prev_avg_loss = None
         self.sub_candle_count = 0
@@ -25,7 +29,8 @@ class RsiIndicator(BaseIndicator):
             popped = None
             if len(self.time_series) == self.N:
                 self._is_ready = True
-                popped = self.time_series.pop(0)
+                # popped = self.time_series.pop(0)
+                popped = self.time_series.popleft()
 
             calculated_data_point = self.running_calc(popped, data)
             self.time_series.append(calculated_data_point)
@@ -58,8 +63,10 @@ class RsiIndicator(BaseIndicator):
             self.losses.append(loss)
 
             if self.is_ready():
-                self.gains.pop(0)
-                self.losses.pop(0)
+                # self.gains.pop(0)
+                # self.losses.pop(0)
+                self.gains.popleft()
+                self.losses.popleft()
 
                 avg_gain = (self.prev_avg_gain * (self.N - 1) + gain) / self.N
                 avg_loss = (self.prev_avg_loss * (self.N - 1) + loss) / self.N

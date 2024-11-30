@@ -2,6 +2,7 @@ from datetime import datetime
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from typing import Union, List, Literal
+from collections import deque
 
 
 class PlotData:
@@ -33,7 +34,9 @@ class PlotData:
         Returns:
 
         """
-        self.data[topic] = {'color': color, 'pattern': pattern, 'time_series': [], 'topic': topic,
+        # self.data[topic] = {'color': color, 'pattern': pattern, 'time_series': [], 'topic': topic,
+        #                     'lines_or_markers': lines_or_markers}
+        self.data[topic] = {'color': color, 'pattern': pattern, 'time_series': deque(), 'topic': topic,
                             'lines_or_markers': lines_or_markers}
 
     def add(self, topic: str, time: datetime, num: Union[int, float], label: str = '') -> None:
@@ -54,7 +57,8 @@ class PlotData:
         time_series.append([time, num, label])
 
         if 0 < self._max_len < len(time_series):
-            time_series.pop(0)
+            # time_series.pop(0)
+            time_series.popleft()
 
     def get_topics(self) -> list:
         """
@@ -148,6 +152,7 @@ class PlotData:
         return go.Scatter(**trace_config)
 
     def __compress_graph(self, data: List, is_compressed: bool = False, compressed_size: int = 10000) -> List:
+        data = list(data)
         data_len = len(data)
         comp_skip_size = int(data_len/compressed_size)
         comp_skip_size = 1 if comp_skip_size == 0 else comp_skip_size
