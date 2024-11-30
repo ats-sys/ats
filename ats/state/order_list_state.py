@@ -16,7 +16,10 @@ class OrderListState(SimpleState):
             raise Exception(f'{order.order_id} is already in the OrderList state')
 
         self._state[order.order_id] = order
-        self._state['__ordered_list'] = sorted(self._state['__ordered_list'] + [order], key=lambda x: x.time)
+        if self._state['__ordered_list'] and (order.time - self._state['__ordered_list'][-1].time).total_seconds() >= 0:
+            self._state['__ordered_list'].append(order)
+        else:
+            self._state['__ordered_list'] = sorted(self._state['__ordered_list'] + [order], key=lambda x: x.time)
 
     def set(self, key, value) -> None:
         raise Exception('.set() method is not supported in order list.')
