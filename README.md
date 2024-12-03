@@ -183,6 +183,16 @@ Refer our Documentation for all the information [Documentation][docs-url]
     - [x] Binance Spot
     - [ ] Binance Futures
     - [ ] More Exchanges
+- [ ] Add More Indicators
+    - [x] Volatility (std)
+    - [x] Moving Average/ Weighted Moving Average
+    - [x] RSI
+    - [x] OBV
+    - [x] Trend
+    - [x] Super Trend
+    - [x] AI Indicator
+    - [ ] Bollinger Bands
+    - [ ] More Indicators
 - [x] Realtime Plotting API
 - [x] Realtime Logging API
 - [ ] Optimize Back trading Engine
