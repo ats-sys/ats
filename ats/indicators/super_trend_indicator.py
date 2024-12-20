@@ -1,4 +1,5 @@
 import numpy as np
+from ats.exchanges.data_classes.candle import Candle
 from ats.indicators.base_indicator import BaseIndicator
 
 
@@ -12,11 +13,11 @@ class SuperTrendIndicator(BaseIndicator):
         self.prev_st = True
         self.multiplier = config["multiplier"]
 
-    def add(self, data):
+    def add(self, candle: Candle):
         """
         Adds a new datapoint
         Args:
-            data: new datapoint
+            candle: new candle
 
         Returns:
             None
@@ -24,9 +25,10 @@ class SuperTrendIndicator(BaseIndicator):
         popped = None
         if len(self.time_series) == self.N:
             self._is_ready = True
-            popped = self.time_series.pop(0)
+            # popped = self.time_series.pop(0)
+            popped = self.time_series.popleft()
 
-        tr = self.running_calc(popped, data)
+        tr = self.running_calc(popped, candle)
         self.time_series.append(tr)
 
     def running_calc(self, popped_data_point, new_data_point) -> any:

@@ -34,7 +34,8 @@ class MeanIndicator(BaseIndicator):
             popped = None
             if len(self.time_series) == self.N:
                 self._is_ready = True
-                popped = self.time_series.pop(0)
+                # popped = self.time_series.pop(0)
+                popped = self.time_series.popleft()
 
             calculated_data_point = self.running_calc(popped, data)
             self.time_series.append(calculated_data_point)

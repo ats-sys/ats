@@ -22,7 +22,8 @@ class AiIndicator(BaseIndicator):
             popped = None
             if len(self.time_series) == self.N:
                 self._is_ready = True
-                popped = self.time_series.pop(0)
+                # popped = self.time_series.pop(0)
+                popped = self.time_series.popleft()
 
             self.time_series.append(data)
             _ = self.running_calc(popped, data)

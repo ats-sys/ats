@@ -1,4 +1,5 @@
 import math
+from collections import deque
 from ats.exchanges.data_classes.candle import Candle
 
 
@@ -8,7 +9,8 @@ class PriceProbModel:
     """
     def __init__(self, step: float, history_len = 10):
         self._price_freq_lookup = {}
-        self._candle_history = []
+        # self._candle_history = []
+        self._candle_history = deque()
         self._step = step
         self._tot = 0
         self._history_len = history_len
@@ -58,7 +60,8 @@ class PriceProbModel:
         self._tot += 1
 
         if len(self._price_freq_lookup) > self._history_len:
-            oldest_item = self._candle_history.pop(0)
+            # oldest_item = self._candle_history.pop(0)
+            oldest_item = self._candle_history.popleft()
 
             max_changed = False
 

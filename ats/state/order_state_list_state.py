@@ -1,3 +1,4 @@
+import time
 from typing import Union, List
 from ats.state.simple_state import SimpleState
 from ats.exchanges.data_classes.order import Order, OrderStatus
@@ -22,7 +23,12 @@ class OrderStateListState(SimpleState):
             raise Exception(f'{order.order_id} is already in the OrderList state')
 
         self._state[order.order_id] = order
-        self._state['__ordered_list'] = sorted(self._state['__ordered_list'] + [order], key=lambda x: x.time)
+        # t0 = time.time()
+        if self._state['__ordered_list'] and (order.time - self._state['__ordered_list'][-1].time).total_seconds() >= 0:
+            self._state['__ordered_list'].append(order)
+        else:
+            self._state['__ordered_list'] = sorted(self._state['__ordered_list'] + [order], key=lambda x: x.time)
+        # print(f"Sorting time: {time.time() - t0} =============")
 
     def set(self, key, value) -> None:
         raise Exception('.set() method is not supported in order list.')
@@ -44,6 +50,10 @@ class OrderStateListState(SimpleState):
             if order.order_status == OrderStatus.FILLED:
                 self._state['__filled_order_list'][k] = True
                 new_filled_keys[k] = True
+                try:
+                    del self._state['__open_order_list'][k]
+                except:
+                    ...
 
             elif order.order_status == OrderStatus.PENDING or order.order_status == OrderStatus.PARTIALLY_FILLED:
                 # self._state['__open_order_list'][k] = True
@@ -53,12 +63,16 @@ class OrderStateListState(SimpleState):
             elif order.order_status == OrderStatus.CANCELED or order.order_status == OrderStatus.REJECTED:
                 self._state['__void_order_list'][k] = True
                 new_void_keys[k] = True
+                try:
+                    del self._state['__open_order_list'][k]
+                except:
+                    ...
 
             else:
                 raise Exception(f'{k} has a non-recognized order state: {order.order_status}')
 
-        self._state['__open_order_list'] = {order_id: order for order_id, order in self._state['__open_order_list'].items() if
-                                            (order_id not in new_filled_keys) and (order_id not in new_void_keys)}
+        # self._state['__open_order_list'] = {order_id: order for order_id, order in self._state['__open_order_list'].items() if
+        #                                     (order_id not in new_filled_keys) and (order_id not in new_void_keys)}
 
     def add_pair(self, pair: List[Order]):
         self._state['__order_pairs_list'].append(pair)
@@ -111,12 +125,21 @@ class OrderStateListState(SimpleState):
     def get_pending_orders(self):
         return [order for order in self._state['__ordered_list'] if order.order_status == OrderStatus.PENDING or order.order_status == OrderStatus.PARTIALLY_FILLED]
 
-    def get_pending_orders_before_ts(self, curr_time, dt=3600):
+    def get_pending_orders_before_ts_old(self, curr_time, dt=3600):
         req_pending_orders = []
         for i, order in enumerate(self.get_pending_orders()):
             if (curr_time - order.time).total_seconds() > dt:
                 req_pending_orders.append(order)
+
         return req_pending_orders
+
+    def get_pending_orders_before_ts(self, curr_time, dt=3600):
+        ordered_pending_orders = self.get_pending_orders()
+        for i, order in enumerate(reversed(ordered_pending_orders)):
+            if (curr_time - order.time).total_seconds() > dt:
+                return ordered_pending_orders[:-i if i else None]
+
+        return []
 
     def get(self, key):
         if key in self._state:
