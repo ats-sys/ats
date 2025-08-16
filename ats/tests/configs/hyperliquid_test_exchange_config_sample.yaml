@@ -1,0 +1,28 @@
+exchange:
+  namespace: 'exchanges:hyperliquid_spot'
+  config:
+    symbol:
+      quote: 'USDT'
+      base: 'BTC'
+      id: '@142'
+
+    # Defines the size of the window for plot data. -1 Means there is no limit for the window (i.e. Grows with every data point)
+    plot_data_max_len: -1
+
+    extra:
+      account_address: "<Main Account Address>" 
+      secret_key: "<Secret Key>"
+      trading_mode: LIVE  # TEST or LIVE #TEST
+      candle_time: 1s  # Refer binance doc to see supported time intervals
+      force_close_time: 360000 # When the order's age is more than the defined amount in sec, order is closed by looking at the candle values
+
+strategy:
+  namespace: 'strategies:simple_strategy'
+  config:
+    log_trade_activity: true,
+    base_symbol: 'BTC'
+    quote_symbol: 'USD'
+    random_number_limit: 1000
+    trade_rate_control: 100
+    order_size: 0.001
+    price_step: 10
