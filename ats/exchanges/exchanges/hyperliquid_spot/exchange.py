@@ -128,7 +128,7 @@ class Exchange(BaseExchange):
         try:
             if self._is_ready_for_trading and message and 'data' in message:
                 candle_data = message['data']
-                
+
                 # Create a Candle object from the received data
                 candle_symbol = self.config['symbol']['base'] + self.config['symbol']['quote']
                 candle = Candle(
@@ -195,6 +195,107 @@ class Exchange(BaseExchange):
     def __get_cloid_from_order_id(self, order_id: str) -> Cloid:
         return Cloid.from_str(f"0x{uuid.UUID(order_id).int:032x}")
 
+    def __approximate_and_format_size_or_price(self, size_or_price: Literal['SIZE', 'PRICE'],
+                                               num: Union[float, int], round_down: bool = False) -> str:
+        """
+        Format price or size according to Hyperliquid tick and lot size rules.
+
+        Price rules:
+        - Max 5 significant figures
+        - Max decimal places: MAX_DECIMALS - szDecimals (6 for perps, 8 for spot)
+        - Integer prices always allowed
+
+        Size rules:
+        - Rounded to szDecimals
+
+        Args:
+            size_or_price: 'SIZE' or 'PRICE'
+            num: Number to be formatted
+            round_down: If True, round down instead of up
+
+        Returns:
+            Formatted string with trailing zeroes removed
+        """
+
+        # Get asset metadata if not already cached
+        if not hasattr(self, '_asset_metadata'):
+            meta = self.info.spot_meta()
+            # symbol = self.config['symbol']['id']
+            symbol = self.config['symbol']['base']
+
+            # Find szDecimals for this asset
+            self._sz_decimals = None
+
+            # Check spot metadata
+            if 'tokens' in meta:
+                for token in meta['tokens']:
+                    if token['name'] == symbol:
+                        self._sz_decimals = token['szDecimals']
+                        break
+
+            # Check perp metadata if not found in spot
+            if self._sz_decimals is None:
+                meta = self.info.meta()
+
+                if "universe" in meta:
+                    for asset in meta['universe']:
+                        if asset["name"] == symbol:
+                            self._sz_decimals = asset['szDecimals']
+                            break
+
+            if self._sz_decimals is None:
+                raise Exception(f"Could not find szDecimals for symbol {symbol}")
+
+            self._asset_metadata = True
+
+        if size_or_price == 'SIZE':
+            # Size: Round to szDecimals
+            precision = self._sz_decimals
+
+            if round_down:
+                formatted = f"{np.floor(num * 10 ** precision) / 10 ** precision:.{precision}f}"
+            else:
+                formatted = f"{np.ceil(num * 10 ** precision) / 10 ** precision:.{precision}f}"
+
+        elif size_or_price == 'PRICE':
+            # Price: Max 5 significant figures, max (MAX_DECIMALS - szDecimals) decimal places
+            # Assuming spot (MAX_DECIMALS = 8), adjust if using perps (MAX_DECIMALS = 6)
+            MAX_DECIMALS = 8  # Use 6 for perps
+            max_decimal_places = MAX_DECIMALS - self._sz_decimals
+
+            # Check if integer (integers always allowed regardless of sig figs)
+            if num == int(num):
+                return str(int(num))
+
+            # Count significant figures and apply rounding
+            # Convert to scientific notation to count sig figs
+            num_str = f"{num:.15e}"  # High precision scientific notation
+            mantissa, exponent = num_str.split('e')
+            mantissa_clean = mantissa.replace('.', '').replace('-', '')
+
+            # Round to 5 significant figures
+            if len(mantissa_clean) > 5:
+                # Need to round to 5 sig figs
+                scale = 10 ** (int(exponent) - 4)  # Position for 5th sig fig
+                if round_down:
+                    num = np.floor(num / scale) * scale
+                else:
+                    num = np.ceil(num / scale) * scale
+
+            # Now apply decimal place constraint
+            if round_down:
+                formatted = f"{np.floor(num * 10 ** max_decimal_places) / 10 ** max_decimal_places:.{max_decimal_places}f}"
+            else:
+                formatted = f"{np.ceil(num * 10 ** max_decimal_places) / 10 ** max_decimal_places:.{max_decimal_places}f}"
+
+        else:
+            raise ValueError(f"size_or_price must be 'SIZE' or 'PRICE', got {size_or_price}")
+
+        # Remove trailing zeroes (required for Hyperliquid signing)
+        formatted = formatted.rstrip('0').rstrip('.')
+
+        return formatted
+
     def submit_order(self, order: Order) -> None:
         logger.info('Hyperliquid order submission.')
         logger.info(order)
@@ -213,11 +314,12 @@ class Exchange(BaseExchange):
             time.sleep(1)
             # Determine if it's a buy or sell order
             is_buy = order.order_side == "BUY"
-            
-            # Set order parameters
-            size = order.size
-            price = order.price if order.order_type == "LIMIT" else None
-            
+
+            # Format size and price using the new function
+            size = float(self.__approximate_and_format_size_or_price('SIZE', order.size))
+            price = float(self.__approximate_and_format_size_or_price('PRICE', order.price, round_down=(
+                    order.order_side == "BUY"))) if order.order_type == "LIMIT" else None
+
             if order.order_id is None:
                 raise exchange_exceptions.InvalidOrderSubmissionException(order, "Order id is not available")
 
