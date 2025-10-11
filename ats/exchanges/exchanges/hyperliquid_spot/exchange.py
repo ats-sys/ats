@@ -108,7 +108,7 @@ class Exchange(BaseExchange):
         self.__wallet_balance_refresh_timer = Timer(on_timer=self.__refresh_wallet_balance, interval=5)
 
 
-        self.subscription = {"type": "candle", "coin": self.config['symbol']['id'], "interval": "1m"}
+        self.subscription = {"type": "candle", "coin": self.config['symbol']['id'], "interval": self.config['extra']['candle_time']}
         self.subscription_id = self.info.subscribe(self.subscription, self.__on_ws_candle_callback)
 
         # We have to keep track of last candle times. Binance sends more than one record for candles
